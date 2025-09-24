@@ -1,0 +1,9 @@
+programa de janela
+tela preta
+pixels brancos formam "minhoca"
+minhoca tem obstaculos na frente
+obstaculos sao maças
+cada maca comida minhoca fica maior
+se a minhoca tocar nela mesma
+game over
+se game over acontecer, aparece botao de restart
