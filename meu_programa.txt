@@ -1,9 +1,15 @@
 programa de janela
-tela preta
-pixels brancos formam "minhoca"
-minhoca tem obstaculos na frente
-obstaculos sao maças
-cada maca comida minhoca fica maior
-se a minhoca tocar nela mesma
+tela branca
+dinossauro corre
+cactos sao obstaculos
+dinossauro pula com espaço
+dinossauro tem 3 escudos
+se apertar x ativa escudo
+escudo permite passar por obstaculo
+se escudos acabarem e bater no obstaculo
 game over
-se game over acontecer, aparece botao de restart
+aparece botao de restart
+score aumenta a cada segundo
+tem som de pulo
+tem som de escudo
+tem som de game over
