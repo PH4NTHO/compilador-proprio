@@ -7,7 +7,7 @@ let saida = `
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Jogo do Dino com Escudos e Score</title>
+  <title>Dino Chrome Custom</title>
   <style>
     canvas { background: white; display: block; margin: auto; border: 2px solid black; }
     button { display: none; margin: 20px auto; padding: 10px; font-size: 18px; }
@@ -20,7 +20,13 @@ let saida = `
     const canvas = document.getElementById("game");
     const ctx = canvas.getContext("2d");
 
-    let dino = { x: 50, y: 200, w: 40, h: 40, vy: 0, jumping: false };
+    // Dino
+    const dinoSprite = new Image();
+    dinoSprite.src = "dino.png"; // use o arquivo que você enviou
+    let dino = { x: 50, y: 200, w: 44, h: 47, vy: 0, jumping: false };
+    let frameIndex = 0; 
+    let frameCounter = 0;
+
     let gravity = 1.2;
     let obstacles = [];
     let frames = 0;
@@ -29,75 +35,32 @@ let saida = `
     let shieldActive = false;
     let shieldTimer = 0;
     let score = 0;
+    let speed = 6;
 
     // Sons
     const jumpSound = new Audio("https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg");
     const shieldSound = new Audio("https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg");
-    const gameOverSound = new Audio("https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg");
-`;
+    const gameOverSound = new Audio("https://actions.google.com/sounds/v1/cartoon/concussive_drum_hit.ogg");
 
-// Tradução simples
-for (let linha of programa) {
-  linha = linha.trim().toLowerCase();
-
-  if (linha.includes("dinossauro corre")) {
-    saida += `
-    function drawDino() {
-      ctx.fillStyle = shieldActive ? "blue" : "black";
-      ctx.fillRect(dino.x, dino.y, dino.w, dino.h);
-    }
-    `;
-  }
-
-  if (linha.includes("cactos sao obstaculos")) {
-    saida += `
-    function drawObstacles() {
-      for (let o of obstacles) {
-        ctx.fillStyle = "green";
-        ctx.fillRect(o.x, o.y, o.w, o.h);
-      }
-    }
-    `;
-  }
-
-  if (linha.includes("dinossauro pula com espaço")) {
-    saida += `
+    // Controles
     document.addEventListener("keydown", (e) => {
       if (e.code === "Space" && !dino.jumping) {
         dino.vy = -18;
         dino.jumping = true;
         jumpSound.play();
       }
-    });
-    `;
-  }
-
-  if (linha.includes("se apertar x ativa escudo")) {
-    saida += `
-    document.addEventListener("keydown", (e) => {
       if (e.key.toLowerCase() === "x" && shields > 0 && !shieldActive) {
         shieldActive = true;
         shields--;
-        shieldTimer = 100; // duração do escudo (~3s)
+        shieldTimer = 100;
         shieldSound.play();
       }
     });
-    `;
-  }
 
-  if (linha.includes("aparece botao de restart")) {
-    saida += `
     document.getElementById("restart").onclick = () => location.reload();
-    `;
-  }
-}
 
-// Loop principal
-saida += `
     // Score sobe a cada segundo
-    setInterval(() => {
-      if (game) score++;
-    }, 1000);
+    setInterval(() => { if (game) score++; }, 1000);
 
     function update() {
       frames++;
@@ -114,13 +77,17 @@ saida += `
 
       // Obstáculos
       if (frames % 90 === 0) {
-        obstacles.push({ x: canvas.width, y: canvas.height - 60, w: 20, h: 40 });
+        obstacles.push({ x: canvas.width, y: canvas.height - 60, w: 20, h: 40, passed: false });
       }
-      for (let o of obstacles) o.x -= 6;
+      for (let o of obstacles) o.x -= speed;
       obstacles = obstacles.filter(o => o.x + o.w > 0);
 
-      // Colisão
+      // Colisão e pontuação de cacto
       for (let o of obstacles) {
+        if (!o.passed && o.x + o.w < dino.x) {
+          o.passed = true;
+          speed += 0.5; // aumenta velocidade
+        }
         if (
           dino.x < o.x + o.w &&
           dino.x + dino.w > o.x &&
@@ -142,16 +109,37 @@ saida += `
       }
     }
 
+    function drawDino() {
+      frameCounter++;
+      if (frameCounter % 10 === 0) frameIndex = (frameIndex + 1) % 2; // alterna frames
+
+      ctx.save();
+      if (shieldActive) ctx.globalAlpha = 0.6;
+      ctx.drawImage(
+        dinoSprite,
+        0, 0, 44, 47, // usa o sprite inteiro (ou cortes se tiver spritesheet)
+        dino.x, dino.y, dino.w, dino.h
+      );
+      ctx.restore();
+    }
+
+    function drawObstacles() {
+      for (let o of obstacles) {
+        ctx.fillStyle = "green";
+        ctx.fillRect(o.x, o.y, o.w, o.h);
+      }
+    }
+
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       drawDino();
       drawObstacles();
 
-      // HUD
       ctx.fillStyle = "black";
       ctx.font = "16px Arial";
       ctx.fillText("Escudos: " + shields, 10, 20);
       ctx.fillText("Score: " + score, 10, 40);
+      ctx.fillText("Velocidade: " + speed.toFixed(1), 10, 60);
     }
 
     function loop() {
@@ -166,4 +154,4 @@ saida += `
 `;
 
 fs.writeFileSync("saida.html", saida);
-console.log("✅ Jogo do Dino com score e sons gerado em saida.html");
+console.log("✅ Dino com sprite, animação e dificuldade progressiva gerado em saida.html");
